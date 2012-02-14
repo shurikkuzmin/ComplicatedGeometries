@@ -635,6 +635,14 @@ void stream()
 	
 }
 
+void calculate_mass()
+{
+	double mass=0.0;
+	for(int counter=0;counter<NUM;counter++)
+		if (geometry[counter]==1)
+			mass+=phi[counter];
+	std::cout<<"Mass is "<<mass<<"\n";
+}
 
 int main(int argc, char* argv[])
 {
@@ -651,8 +659,10 @@ int main(int argc, char* argv[])
 		stream();
         
 	    if (counter%NSIGNAL==0)
+	    {
 	    	std::cout<<"Counter="<<counter<<"\n";
-    
+    		calculate_mass();
+    	}
 		//Writing files
 		if (counter%NOUTPUT==0)
 		{
