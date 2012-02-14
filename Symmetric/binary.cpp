@@ -19,10 +19,11 @@ int NUM;
 const int NPOP=9;
 const int radius=20;
 const int radius_droplet=10;
+const double wall_gradient=0.0;
 
 //Time steps
-int N=100000;
-int NOUTPUT=1000;
+int N=100;
+int NOUTPUT=10;
 
 //Fields and populations
 double *f;
@@ -197,12 +198,14 @@ void collide_bulk()
     for(int counter=0;counter<NUM;counter++)
     {
 		double dense_temp=0.0;
+        double phase_temp=0.0;
 		double ux_temp=0.0;
 		double uy_temp=0.0;
 		
 		for(int k=0;k<NPOP;k++)
 		{
 			dense_temp+=f[counter*NPOP+k];
+            phase_temp+=g[counter*NPOP+k];
 			ux_temp+=f[counter*NPOP+k]*cx[k];
 			uy_temp+=f[counter*NPOP+k]*cy[k];
 		}
@@ -213,17 +216,27 @@ void collide_bulk()
 		rho[counter]=dense_temp;
 		ux[counter]=ux_temp;
 		uy[counter]=uy_temp;
+        phi[counter]=phase_temp;
         
-		double feqeq[NPOP];
+		double feqeq[NPOP],geqeq[NPOP];
 
 		for (int k=0; k<NPOP; k++)
+		{
 			feqeq[k]=weights[k]*(dense_temp+3.0*dense_temp*(cx[k]*ux_temp+cy[k]*uy_temp)
             						         +4.5*dense_temp*((cx[k]*cx[k]-1.0/3.0)*ux_temp*ux_temp
 															+(cy[k]*cy[k]-1.0/3.0)*uy_temp*uy_temp
 					    			                         +2.0*ux_temp*uy_temp*cx[k]*cy[k]));
-
+            geqeq[k]=weights[k]*(phase_temp+3.0*phase_temp*(cx[k]*ux_temp+cy[k]*uy_temp)
+                                            +4.5*phase_temp*((cx[k]*cx[k]-1.0/3.0)*ux_temp*ux_temp
+                                            +(cy[k]*cy[k]-1.0/3.0)*uy_temp*uy_temp
+                                            +2.0*ux_temp*uy_temp*cx[k]*cy[k]));
+            
+        }
 		for(int k=0; k < NPOP; k++)
+		{
 			f2[counter*NPOP+k]=f[counter*NPOP+k]*(1.0-omega)+omega*feqeq[k];    	
+            g2[counter*NPOP+k]=g[counter*NPOP+k]*(1.0-omega)+omega*geqeq[k];
+        }
     }
 
 }
@@ -239,6 +252,7 @@ void update_bounce_back()
 		if ( (dir==1) || (dir==3))
 			for(int k=0;k<NPOP;k++)
 				f2[bb_nodes[counter]*NPOP+k]=f2[counter2*NPOP+symmetricx[k]];
+	    
 		else if ( (dir==2) || (dir==4))
 			for(int k=0;k<NPOP;k++)
 				f2[bb_nodes[counter]*NPOP+k]=f2[counter2*NPOP+symmetricy[k]];
@@ -270,6 +284,19 @@ void update_bounce_back()
 	}
 	
 }
+
+void update_phase()
+{
+	for(int counter=0;counter<bb_nodes.size();counter++)
+	{
+		int dir=main_dir[counter];
+		int counter2=bb_nodes[counter]+cy[main_dir[counter]]*NX+cx[main_dir[counter]];
+		phi[bb_nodes[counter]]=phi[bb_nodes[counter2]]+wall_gradient;
+	}
+	
+}
+
+
 
 void initialize_geometry()
 {
@@ -336,7 +363,7 @@ void initialize_geometry()
 	for(int counter=0;counter<NUM;counter++)
 	{
 		int iX=counter%NX;
-		int iY=counter%NY;
+		int iY=counter/NX;
 		
 		if ((iX-(NX-1)/2)*(iX-(NX-1)/2)+(iY-(NY-1)/2-(radius+radius_droplet))*(iY-(NY-1)/2-(radius+radius_droplet))<radius_droplet*radius_droplet)
 		    phi[counter]=1.0;
@@ -482,7 +509,7 @@ int main(int argc, char* argv[])
 
 	for(int counter=0;counter<=N;counter++)
 	{
-
+        update_phase();
         collide_bulk();
         update_bounce_back();
 		stream();
