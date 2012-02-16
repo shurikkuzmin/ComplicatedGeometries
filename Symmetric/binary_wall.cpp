@@ -25,10 +25,10 @@ int NSIGNAL=100;
 
 //Other constants
 const int NPOP=9;
-const int radius=50;
+const int radius=80;
 int radius_droplet=10;
-double wall_gradient=-0.05;
-const int NUM_DROPLETS=3;
+double wall_gradient=-0.1;
+const int NUM_DROPLETS=4;
 const int angle=360/NUM_DROPLETS;
 const double pi=4.0*std::atan(1.0);
 
@@ -231,6 +231,7 @@ void init()
 	//Bulk nodes initialization
 	double feq;
 	double geq;
+	double sum;
 	
 	for(int iY=0;iY<NY;iY++)
 		for(int iX=0;iX<NX;iX++)
@@ -419,8 +420,8 @@ void update_phase()
         phase_temp=0.0;
         if (geometry[counter]==1)
         {
-        	for(int k=0;k<NPOP;k++)
-        		phase_temp+=g[counter*NPOP+k];
+ 	    	for(int k=0;k<NPOP;k++)
+ 	       		phase_temp+=g[counter*NPOP+k];
         	phi[counter]=phase_temp;
 		}
 	}
@@ -428,7 +429,7 @@ void update_phase()
 	for(int counter=0;counter<bb_nodes.size();counter++)
 	{
 		int dir=main_dir[counter];
-		int counter2=bb_nodes[counter]+cy[dir]*NX+cx[dir];
+		int counter2=bb_nodes[counter]+cy[main_dir[counter]]*NX+cx[main_dir[counter]];
 		phi[bb_nodes[counter]]=phi[counter2]-wall_gradient;
 	}
 	
@@ -451,7 +452,7 @@ void initialize_geometry()
 		int iX=counter%NX;
 		int iY=counter/NX;
 	    
-	    if ((iX-(NX-1)/2)*(iX-(NX-1)/2)+(iY-(NY-1)/2)*(iY-(NY-1)/2)<radius*radius)
+	    if ((abs(iX-(NX-1)/2)<radius) && (abs(iY-(NY-1)/2)<radius))
 	    	geometry[counter]=-1;
 	    else
 	    	geometry[counter]=1;  
@@ -503,8 +504,8 @@ void initialize_geometry()
 		bool flag_droplet=false;
 		for (int counter_droplet=0;counter_droplet<NUM_DROPLETS;counter_droplet++)
 		{	
-			double center_x=(NX-1)/2-std::sin(angle*(counter_droplet-1)*pi/180.0)*(radius_droplet+radius);
-			double center_y=(NY-1)/2+std::cos(angle*(counter_droplet-1)*pi/180.0)*(radius_droplet+radius);
+			int center_x=(NX-1)/2-int(std::sin(angle*(counter_droplet-1)*pi/180.0)*(radius_droplet+radius));
+			int center_y=(NY-1)/2+int(std::cos(angle*(counter_droplet-1)*pi/180.0)*(radius_droplet+radius));
 			if (((iX-center_x)*(iX-center_x)+(iY-center_y)*(iY-center_y)<=radius_droplet*radius_droplet) && (geometry[counter]==1))
 		    {	
 		    	phi[counter]=1.0;
@@ -517,7 +518,6 @@ void initialize_geometry()
 				phi[counter]=-1.0;
 			else
 				phi[counter]=phi_wall;
-		
 		}
 	}
 	
@@ -666,8 +666,9 @@ int main(int argc, char* argv[])
     if (argc==3)
     {
     	radius_droplet=atoi(argv[1]);
-    	wall_gradient=atof(argv[2]);
+		wall_gradient=atof(argv[2]);
 	}
+	
 	std::cout<<"Radius of the droplet is "<<radius_droplet<<"\n";
 	std::cout<<"Wall gradient is "<<wall_gradient<<"\n";
 	
@@ -702,10 +703,10 @@ int main(int argc, char* argv[])
  			filewritevelocityy<<std::fixed;
  			filevtk<<std::fixed;
 
-			//filewritedensity<<"den"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			//filewritevelocityx<<"velx"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			//filewritevelocityy<<"vely"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			filevtk<<"vtk"<<std::string(7-counterconvert.str().size(),'0')<<counter;
+			//filewritedensity<<"den_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
+			//filewritevelocityx<<"velx_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
+			//filewritevelocityy<<"vely_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
+			filevtk<<"vtk_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
 			
  			writedensity(filewritedensity.str());
  			writevelocityx(filewritevelocityx.str());
