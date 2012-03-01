@@ -703,10 +703,6 @@ int main(int argc, char* argv[])
  			filewritevelocityy<<std::fixed;
  			filevtk<<std::fixed;
 
-			//filewritedensity<<"den_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			//filewritevelocityx<<"velx_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			//filewritevelocityy<<"vely_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			filevtk<<"vtk_wall"<<std::string(7-counterconvert.str().size(),'0')<<counter;
 			
  			writedensity(filewritedensity.str());
  			writevelocityx(filewritevelocityx.str());

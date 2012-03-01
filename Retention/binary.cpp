@@ -13,13 +13,14 @@
 //Uncomment if you want to clamp tau parameters
 //#define CLAMP_TAU
 
+//Uncomment if you want to read data from file
+#define READ_FILE
+
 //Domain size
-const int NY=201;
-const int NX=201;
-const int NUM=NX*NY;
+int NX,NY,NUM;
 
 //Time steps
-int N=1000;
+int N=5000;
 int NOUTPUT=100;
 int NSIGNAL=100;
 
@@ -27,7 +28,7 @@ int NSIGNAL=100;
 const int NPOP=9;
 const int radius=30;
 int radius_droplet=10;
-double wall_gradient=-0.05;
+double wall_gradient=-0.35;
 double wall_gradient_boundary=0.0;
 const int NUM_DROPLETS=3;
 const int angle=360/NUM_DROPLETS;
@@ -37,7 +38,7 @@ const double pi=4.0*std::atan(1.0);
 const double phi_wall=1.5;
 const double rho_wall=0.5;
 
-const double force_x=0.0001;
+const double force_x=0.000025;
 const double force_y=0.0;
 
 //BGK relaxation parameter
@@ -50,8 +51,6 @@ double kconst=0.04;
 double gammaconst=1.0;
 double tau_gas=1.0;
 double tau_liq=1.0;
-
-
 
 
 //Fields and populations
@@ -212,8 +211,121 @@ void writevtk(std::string const & fname)
     fout<<"VECTORS velocity double\n";
     for(int counter=0;counter<NUM;counter++)
     		fout<<ux[counter]<<" "<<uy[counter]<<" 0\n";
-
     fout.close();
+        
+}
+
+void readvtk(std::string const & fname)
+{
+	std::string filename=fname+".vtk";
+	std::ifstream fin(filename.c_str());
+    std::string s;
+    std::getline(fin,s);
+    std::getline(fin,s);
+    std::getline(fin,s);
+    std::getline(fin,s);
+    std::getline(fin,s);
+    std::cout<<s;
+    fin>>s;
+    fin>>NX;
+    fin>>NY;
+    int NZ;
+    fin>>NZ;
+    std::cout<<NX<<" "<<NY<<" "<<NZ<<"\n";
+    NUM=NX*NY;
+    
+    geometry=new int[NUM];
+    rho=new double[NUM];
+    ux=new double[NUM];
+    uy=new double[NUM];
+    phi=new double[NUM];
+    
+    std::getline(fin,s);
+    while(s!="SCALARS")
+        fin>>s;
+    std::getline(fin,s);
+    std::getline(fin,s);
+    for(int counter=0;counter<NUM;counter++)   
+        fin>>phi[counter];
+    
+    std::getline(fin,s);
+    std::getline(fin,s);
+    std::getline(fin,s);
+    for(int counter=0;counter<NUM;counter++)   
+        fin>>rho[counter];
+    std::getline(fin,s);
+    std::getline(fin,s);
+    std::getline(fin,s);
+    for(int counter=0;counter<NUM;counter++)   
+        fin>>geometry[counter];
+    std::getline(fin,s);
+    std::getline(fin,s);
+    double uz;
+    for(int counter=0;counter<NUM;counter++)
+    { 
+        fin>>ux[counter];
+        fin>>uy[counter];
+        fin>>uz;
+    }
+    fin.close();
+    
+    //Identifying all boundary nodes
+    for(int counter=0;counter<NUM;counter++)
+		if (geometry[counter]==0)
+			bb_nodes.push_back(counter);
+		     
+	//Finding directions for BB nodes
+    dirs=new std::vector<char>[bb_nodes.size()];
+    for(int counter=0;counter<bb_nodes.size();counter++)
+	{
+		for(int k=1;k<NPOP;k++)
+		{
+			int counter2=bb_nodes[counter]+cy[k]*NX+cx[k];
+			if (geometry[counter2]==1)
+				dirs[counter].push_back(k);
+		}
+	}
+	
+
+	for(int counter=0;counter<bb_nodes.size();counter++)
+	{
+     	int nx=0;
+     	int ny=0;
+		bool flag=false;
+     	for(int k=1;k<5;k++)
+		{
+			int counter2=bb_nodes[counter]+cy[k]*NX+cx[k];
+			if (geometry[counter2]==1)
+			{
+				flag=true;
+				nx=nx+cx[k];
+				ny=ny+cy[k];
+			}
+			
+		}
+		if (!flag)
+			for(int k=5;k<NPOP;k++)
+			{
+				int counter2=bb_nodes[counter]+cy[k]*NX+cx[k];
+				if (geometry[counter2]==1)
+				{
+					flag=true;
+					nx=nx+cx[k];
+					ny=ny+cy[k];
+				}
+			}
+		
+		for(int k=1;k<NPOP;k++)
+			if ((nx==cx[k])&&(ny==cy[k]))
+			{
+				main_dir.push_back(k);
+			}
+			
+	}
+	
+	std::cout<<"BB size="<<bb_nodes.size()<<"\n";
+	std::cout<<"Main size="<<main_dir.size()<<"\n";
+    
 }
 
 
@@ -429,6 +541,10 @@ void update_phase()
 
 void initialize_geometry()
 {
+    NY=201;
+    NX=201;
+    NUM=NX*NY;
+    
     geometry=new int[NUM];
     rho=new double[NUM];
     ux=new double[NUM];
@@ -637,7 +753,12 @@ int main(int argc, char* argv[])
 	std::cout<<"Radius of the droplet is "<<radius_droplet<<"\n";
 	std::cout<<"Wall gradient is "<<wall_gradient<<"\n";
 	
+	#ifdef READ_FILE
+    readvtk("../Symmetric/20/Grad-35/vtk0020000");
+    #else
     initialize_geometry();
+    #endif
+    
     init();
       
 
