@@ -21,9 +21,9 @@
 int NX,NY,NUM;
 
 //Time steps
-int N=5000;
-int NHYDRO=5000;
-int NOUTPUT=100;
+int N=20000;
+int NHYDRO=10000;
+int NOUTPUT=250;
 int NSIGNAL=100;
 
 //Other constants
@@ -48,7 +48,7 @@ const double force_y_hydro=0.0;
 //BGK relaxation parameter
 double omega_rho=1.0;
 double omega_phi=1.0;
-double omega_rho_hydro=1.0;
+double omega_hydro=1.0;
 
 //Binary-liquid parameters
 double aconst=0.04;
@@ -68,11 +68,11 @@ double *h;
 double *h2;
 double *phi;
 double *rho_f;
-double *rho_g;
+double *rho_h;
 double *ux_f;
-double *ux_g;
+double *ux_h;
 double *uy_f;
-double *uy_g;
+double *uy_h;
 int *geometry;
 
 
@@ -144,7 +144,7 @@ void writedensity(std::string const & fname)
 		for (int iX=0; iX<NX; ++iX)	
 		{
 			int counter=iY*NX+iX;
-			fout<<rho[counter]<<" ";
+			fout<<rho_f[counter]<<" ";
 		}
 		fout<<"\n";
 	}
@@ -162,7 +162,7 @@ void writevelocityx(std::string const & fname)
 		for (int iX=0; iX<NX; ++iX)	
 		{
 			int counter=iY*NX+iX;
-			fout<<ux[counter]<<" ";
+			fout<<ux_f[counter]<<" ";
 		}
 		fout<<"\n";
 	}
@@ -180,13 +180,13 @@ void writevelocityy(std::string const & fname)
 		for (int iX=0; iX<NX; ++iX)	
 		{
 			int counter=iY*NX+iX;
-			fout<<uy[counter]<<" ";
+			fout<<uy_f[counter]<<" ";
 		}
 		fout<<"\n";
 	}
 
 }
-
+//Did modifications to add another field
 void writevtk(std::string const & fname)
 {
 	std::string filename=fname+".vtk";
@@ -213,7 +213,7 @@ void writevtk(std::string const & fname)
     fout<<"SCALARS density double\n";
     fout<<"LOOKUP_TABLE density_table\n";
     for(int counter=0;counter<NUM;counter++)
-   		fout<<rho[counter]<<"\n";
+   		fout<<rho_f[counter]<<"\n";
  
   	fout<<"SCALARS geometry double\n";
     fout<<"LOOKUP_TABLE geometry_table\n";
@@ -221,11 +221,20 @@ void writevtk(std::string const & fname)
     	fout<<geometry[counter]<<"\n";
     fout<<"VECTORS velocity double\n";
     for(int counter=0;counter<NUM;counter++)
-    		fout<<ux[counter]<<" "<<uy[counter]<<" 0\n";
+    		fout<<ux_f[counter]<<" "<<uy_f[counter]<<" 0\n";
+    fout<<"SCALARS density_one_component double\n";
+    fout<<"LOOKUP_TABLE density_one_component_table\n";
+    for(int counter=0;counter<NUM;counter++)
+        fout<<rho_h[counter]<<"\n";
+    fout<<"VECTORS velocity_one_component double\n";
+    for(int counter=0;counter<NUM;counter++)
+        fout<<ux_h[counter]<<" "<<uy_h[counter]<<" 0\n";
+    
     fout.close();
         
 }
 
+/*
 void readvtk(std::string const & fname)
 {
 	std::string filename=fname+".vtk";
@@ -274,8 +283,8 @@ void readvtk(std::string const & fname)
     double uz;
     for(int counter=0;counter<NUM;counter++)
     { 
-        fin>>ux[counter];
-        fin>>uy[counter];
+        fin>>ux_f[counter];
+        fin>>uy_f[counter];
         fin>>uz;
     }
     fin.close();
@@ -339,6 +348,7 @@ void readvtk(std::string const & fname)
     
 }
 
+*/
 
 void init()
 {
@@ -358,9 +368,9 @@ void init()
 		for(int iX=0;iX<NX;iX++)
 		{
 			int  counter=iY*NX+iX;
-			double dense_temp=rho[counter];
-			double ux_temp=ux[counter];
-			double uy_temp=uy[counter];
+			double dense_temp=rho_f[counter];
+			double ux_temp=ux_f[counter];
+			double uy_temp=uy_f[counter];
             double phase_temp=phi[counter];
             for (int k=0; k<NPOP; k++)
 			{
@@ -408,15 +418,15 @@ void collide_bulk()
 			dense_temp+=f[counter*NPOP+k];
 			ux_temp+=f[counter*NPOP+k]*cx[k];
 			uy_temp+=f[counter*NPOP+k]*cy[k];
-			dense_temp_hydro+=f[counter*NPOP+k];
-			ux_temp_hydro+=f[counter*NPOP+k]*cx[k];
-			uy_temp_hydro+=f[counter*NPOP+k]*cy[k];
+			dense_temp_hydro+=h[counter*NPOP+k];
+			ux_temp_hydro+=h[counter*NPOP+k]*cx[k];
+			uy_temp_hydro+=h[counter*NPOP+k]*cy[k];
 		}
 	
 		ux_temp=(ux_temp+0.5*force_x)/dense_temp;
 		uy_temp=(uy_temp+0.5*force_y)/dense_temp;
-		ux_temp_hydro=(ux_temp_hydro+0.5*force_x_hydro)/dense_temp;
-		uy_temp_hydro=(uy_temp_hydro+0.5*force_y_hydro)/dense_temp;
+		ux_temp_hydro=(ux_temp_hydro+0.5*force_x_hydro)/dense_temp_hydro;
+		uy_temp_hydro=(uy_temp_hydro+0.5*force_y_hydro)/dense_temp_hydro;
         
 	
 		rho_f[counter]=dense_temp;
@@ -427,7 +437,6 @@ void collide_bulk()
         ux_h[counter]=ux_temp_hydro;
         uy_h[counter]=uy_temp_hydro;
         
-        #ifdef PHASE
 		double laplace_temp=0.0;
 		double gradx_temp=0.0;
 		double grady_temp=0.0;
@@ -461,7 +470,9 @@ void collide_bulk()
             sum_hydro+=feqeq_hydro[k];
             
             feqeq[k]=weights[k]*(3.0*pressure_bulk+3.0*dense_temp*(cx[k]*ux_temp+cy[k]*uy_temp)
-                +4.5*dense_temp*((cx[k]*cx[k]-1.0/3.0)*ux_temp*ux_temp+(cy[k]*cy[k]-1.0/3.0)*uy_temp*uy_temp+2.0*ux_temp*uy_temp*cx[k]*cy[k]));			
+                +4.5*dense_temp*((cx[k]*cx[k]-1.0/3.0)*ux_temp*ux_temp+(cy[k]*cy[k]-1.0/3.0)*uy_temp*uy_temp+2.0*ux_temp*uy_temp*cx[k]*cy[k]))
+                +kconst*(wxx[k]*gradx_temp*gradx_temp+wyy[k]*grady_temp*grady_temp+wxy[k]*gradx_temp*grady_temp);
+			
 			sum+=feqeq[k];
             
 			geqeq[k]=weights[k]*(3.0*chemical_pot+3.0*phase_temp*(cx[k]*ux_temp+cy[k]*uy_temp)
@@ -471,9 +482,9 @@ void collide_bulk()
 
 		feqeq[0]=dense_temp-sum;
         feqeq_hydro[0]=dense_temp_hydro-sum_hydro;
-
-		geqeq[0]=phase_temp-sum_phase;
-        tau_rho=tau_gas+(phase_temp+1.0)/2.0*(tau_liq-tau_gas);
+        geqeq[0]=phase_temp-sum_phase;
+        
+        double tau_rho=tau_gas+(phase_temp+1.0)/2.0*(tau_liq-tau_gas);
         #ifdef CLAMP_TAU
         if (phase_temp>1.0)
             tau_rho=tau_liq;
@@ -481,14 +492,14 @@ void collide_bulk()
             tau_rho=tau_gas;
         #endif   	
         omega_rho=1.0/tau_rho;
-        omega_rho_hydro=1.0/tau_gas;
+        omega_hydro=1.0/tau_gas;
 		//Obtain force population
         for (int k=0;k<9;k++)
         {
 			force[k]=weights[k]*(1.0-0.5*omega_rho)*(3.0*force_x*cx[k]+3.0*force_y*cy[k]+
         	                9.0*((cx[k]*cx[k]-1.0/3.0)*force_x*ux_temp+cx[k]*cy[k]*(force_x*uy_temp+force_y*ux_temp)+
  							(cy[k]*cy[k]-1.0/3.0)*force_y*uy_temp));
-    		force_hydro[k]=weights[k]*(1.0-0.5*omega_rho_hydro)*(3.0*force_x_hydro*cx[k]+3.0*force_y_hydro*cy[k]+
+    		force_hydro[k]=weights[k]*(1.0-0.5*omega_hydro)*(3.0*force_x_hydro*cx[k]+3.0*force_y_hydro*cy[k]+
         	                9.0*((cx[k]*cx[k]-1.0/3.0)*force_x_hydro*ux_temp_hydro
         	                +cx[k]*cy[k]*(force_x_hydro*uy_temp_hydro+force_y_hydro*ux_temp_hydro)+
     							(cy[k]*cy[k]-1.0/3.0)*force_y_hydro*uy_temp_hydro));
@@ -510,17 +521,13 @@ void update_bounce_back()
 	for(int counter=0;counter<bb_nodes.size();counter++)
 	{
 		
-		//Perform pure bounce back for both phases, probably need to do something else
 		for(int k=0;k<dirs[counter].size();k++)
 		{
 			int dir=dirs[counter][k];
 			int counter2=bb_nodes[counter]+cy[dir]*NX+cx[dir];
-			#ifdef HYDRO
 			f2[bb_nodes[counter]*NPOP+dir]=f2[counter2*NPOP+compliment[dir]];
-			#endif
-			#ifdef PHASE
 			g2[bb_nodes[counter]*NPOP+dir]=g2[counter2*NPOP+compliment[dir]];
-		    #endif
+            h2[bb_nodes[counter]*NPOP+dir]=h2[counter2*NPOP+compliment[dir]];
 		}
 	}
 	
@@ -529,23 +536,31 @@ void update_bounce_back()
     {
         int iX_top=(iX+1+NX)%NX;
         int iX_bottom=(iX-1+NX)%NX;
-        #ifdef HYDRO
+        
         f2[iX*NPOP+2]=f2[(NX+iX)*NPOP+4];
         f2[iX*NPOP+5]=f2[(NX+iX_top)*NPOP+7];
         f2[iX*NPOP+6]=f2[(NX+iX_bottom)*NPOP+8];
         f2[(NX*(NY-1)+iX)*NPOP+4]=f2[(NX*(NY-2)+iX)*NPOP+2];
         f2[(NX*(NY-1)+iX)*NPOP+7]=f2[(NX*(NY-2)+iX_bottom)*NPOP+5];
         f2[(NX*(NY-1)+iX)*NPOP+8]=f2[(NX*(NY-2)+iX_top)*NPOP+6];
-        #endif
         
-        #ifdef PHASE        
+        //Phase populations
         g2[iX*NPOP+2]=g2[(NX+iX)*NPOP+4];
         g2[iX*NPOP+5]=g2[(NX+iX_top)*NPOP+7];
         g2[iX*NPOP+6]=g2[(NX+iX_bottom)*NPOP+8];
         g2[(NX*(NY-1)+iX)*NPOP+4]=g2[(NX*(NY-2)+iX)*NPOP+2];
         g2[(NX*(NY-1)+iX)*NPOP+7]=g2[(NX*(NY-2)+iX_bottom)*NPOP+5];
         g2[(NX*(NY-1)+iX)*NPOP+8]=g2[(NX*(NY-2)+iX_top)*NPOP+6];
-        #endif
+
+        //One-component flow
+        h2[iX*NPOP+2]=h2[(NX+iX)*NPOP+4];
+        h2[iX*NPOP+5]=h2[(NX+iX_top)*NPOP+7];
+        h2[iX*NPOP+6]=h2[(NX+iX_bottom)*NPOP+8];
+        h2[(NX*(NY-1)+iX)*NPOP+4]=h2[(NX*(NY-2)+iX)*NPOP+2];
+        h2[(NX*(NY-1)+iX)*NPOP+7]=h2[(NX*(NY-2)+iX_bottom)*NPOP+5];
+        h2[(NX*(NY-1)+iX)*NPOP+8]=h2[(NX*(NY-2)+iX_top)*NPOP+6];
+
+
     }
 }
 
@@ -585,7 +600,7 @@ void update_phase()
 void initialize_geometry()
 {
     NY=201;
-    NX=201;
+    NX=601;
     NUM=NX*NY;
     geometry=new int[NUM];
     rho_f=new double[NUM];
@@ -647,7 +662,7 @@ void initialize_geometry()
 		}
 	}
 	
-
+    //Determination of the normal
 	for(int counter=0;counter<bb_nodes.size();counter++)
 	{
      	int nx=0;
@@ -685,7 +700,6 @@ void initialize_geometry()
 	}
 	std::cout<<"BB size="<<bb_nodes.size()<<"\n";
 	std::cout<<"Main size="<<main_dir.size()<<"\n";
-	writephase("phase");
 	writegeometry("geometry");
 }
 
@@ -725,15 +739,23 @@ void initialize_phase()
 {
 	//Identifying fluids
 	for(int counter=0;counter<NUM;counter++)
+		if (geometry[counter]==1)
+			phi[counter]=-1.0;
+		else 
+			phi[counter]=phi_wall;
+
+    int xcenter=20;
+    int ycenter=(NY-1)/2;
+
+    for(int counter=0;counter<NUM;counter++)
 	{
 		int iX=counter%NX;
 		int iY=counter/NX;
 		
-			if (geometry[counter]==1)
-				phi[counter]=-1.0;
-			else 
-				phi[counter]=phi_wall;
-	}    
+		if ((iX-xcenter)*(iX-xcenter)+(iY-ycenter)*(iY-ycenter)<=15*15)
+            phi[counter]=1;
+    }    
+    writephase("phase");
 }
 
 void finish_simulation()
@@ -814,9 +836,23 @@ int main(int argc, char* argv[])
 	
 	initialize_geometry();
     initialize_hydro();
+    initialize_phase();
     init();
-	for(int counter=0;counter<=NHYDRO;counter++)
+    bool flag_hydro=true;
+	for(int counter=0;counter<=N;counter++)
 	{
+        if ((counter>NHYDRO) && (flag_hydro))
+        {
+            force_x=force_x_hydro;
+            flag_hydro=false;
+            std::cout<<"Size of the array"<<sizeof(f)<<"\n";
+            std::memcpy(f,h,sizeof(f));
+            std::memcpy(f2,h2,sizeof(f2));
+            std::memcpy(rho_f,rho_h,sizeof(rho_f));
+            std::memcpy(ux_f,ux_h,sizeof(ux_f));
+            std::memcpy(uy_f,uy_h,sizeof(uy_f));
+        }
+        update_phase();
         collide_bulk();
         update_bounce_back();
 		stream();
@@ -829,6 +865,7 @@ int main(int argc, char* argv[])
 		//Writing files
 		if (counter%NOUTPUT==0)
 		{
+            std::cout<<"Output "<<counter<<"\n";
 			std::stringstream filewritedensity;
   			std::stringstream filewritevelocityx;
   			std::stringstream filewritevelocityy;
@@ -844,7 +881,7 @@ int main(int argc, char* argv[])
 			//filewritedensity<<"den"<<std::string(7-counterconvert.str().size(),'0')<<counter;
 			//filewritevelocityx<<"velx"<<std::string(7-counterconvert.str().size(),'0')<<counter;
 			//filewritevelocityy<<"vely"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			filevtk<<"vtk_hydro"<<std::string(7-counterconvert.str().size(),'0')<<counter;
+			filevtk<<"vtk"<<std::string(7-counterconvert.str().size(),'0')<<counter;
 			
  			writedensity(filewritedensity.str());
  			writevelocityx(filewritevelocityx.str());
