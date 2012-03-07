@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string.h>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,9 +22,9 @@
 int NX,NY,NUM;
 
 //Time steps
-int N=20000;
+int N=100000;
 int NHYDRO=10000;
-int NOUTPUT=250;
+int NOUTPUT=1000;
 int NSIGNAL=100;
 
 //Other constants
@@ -42,8 +43,8 @@ const double rho_wall=0.5;
 
 double force_x=0.0;
 double force_y=0.0;
-const double force_x_hydro=0.000025;
-const double force_y_hydro=0.0;
+double force_x_hydro=0.00001;
+double force_y_hydro=0.0;
 
 //BGK relaxation parameter
 double omega_rho=1.0;
@@ -234,121 +235,6 @@ void writevtk(std::string const & fname)
         
 }
 
-/*
-void readvtk(std::string const & fname)
-{
-	std::string filename=fname+".vtk";
-	std::ifstream fin(filename.c_str());
-    std::string s;
-    std::getline(fin,s);
-    std::getline(fin,s);
-    std::getline(fin,s);
-    std::getline(fin,s);
-    std::getline(fin,s);
-    std::cout<<s;
-    fin>>s;
-    fin>>NX;
-    fin>>NY;
-    int NZ;
-    fin>>NZ;
-    std::cout<<NX<<" "<<NY<<" "<<NZ<<"\n";
-    NUM=NX*NY;
-    
-    geometry=new int[NUM];
-    rho=new double[NUM];
-    ux=new double[NUM];
-    uy=new double[NUM];
-    phi=new double[NUM];
-    
-    std::getline(fin,s);
-    while(s!="SCALARS")
-        fin>>s;
-    std::getline(fin,s);
-    std::getline(fin,s);
-    for(int counter=0;counter<NUM;counter++)   
-        fin>>phi[counter];
-    
-    std::getline(fin,s);
-    std::getline(fin,s);
-    std::getline(fin,s);
-    for(int counter=0;counter<NUM;counter++)   
-        fin>>rho[counter];
-    std::getline(fin,s);
-    std::getline(fin,s);
-    std::getline(fin,s);
-    for(int counter=0;counter<NUM;counter++)   
-        fin>>geometry[counter];
-    std::getline(fin,s);
-    std::getline(fin,s);
-    double uz;
-    for(int counter=0;counter<NUM;counter++)
-    { 
-        fin>>ux_f[counter];
-        fin>>uy_f[counter];
-        fin>>uz;
-    }
-    fin.close();
-    
-    //Identifying all boundary nodes
-    for(int counter=0;counter<NUM;counter++)
-		if (geometry[counter]==0)
-			bb_nodes.push_back(counter);
-		     
-	//Finding directions for BB nodes
-    dirs=new std::vector<char>[bb_nodes.size()];
-    for(int counter=0;counter<bb_nodes.size();counter++)
-	{
-		for(int k=1;k<NPOP;k++)
-		{
-			int counter2=bb_nodes[counter]+cy[k]*NX+cx[k];
-			if (geometry[counter2]==1)
-				dirs[counter].push_back(k);
-		}
-	}
-	
-
-	for(int counter=0;counter<bb_nodes.size();counter++)
-	{
-     	int nx=0;
-     	int ny=0;
-		bool flag=false;
-     	for(int k=1;k<5;k++)
-		{
-			int counter2=bb_nodes[counter]+cy[k]*NX+cx[k];
-			if (geometry[counter2]==1)
-			{
-				flag=true;
-				nx=nx+cx[k];
-				ny=ny+cy[k];
-			}
-			
-		}
-		if (!flag)
-			for(int k=5;k<NPOP;k++)
-			{
-				int counter2=bb_nodes[counter]+cy[k]*NX+cx[k];
-				if (geometry[counter2]==1)
-				{
-					flag=true;
-					nx=nx+cx[k];
-					ny=ny+cy[k];
-				}
-			}
-		
-		for(int k=1;k<NPOP;k++)
-			if ((nx==cx[k])&&(ny==cy[k]))
-			{
-				main_dir.push_back(k);
-			}
-			
-	}
-	
-	std::cout<<"BB size="<<bb_nodes.size()<<"\n";
-	std::cout<<"Main size="<<main_dir.size()<<"\n";
-    
-}
-
-*/
 
 void init()
 {
@@ -752,7 +638,7 @@ void initialize_phase()
 		int iX=counter%NX;
 		int iY=counter/NX;
 		
-		if ((iX-xcenter)*(iX-xcenter)+(iY-ycenter)*(iY-ycenter)<=15*15)
+		if ((iX-xcenter)*(iX-xcenter)+(iY-ycenter)*(iY-ycenter)<=radius_droplet*radius_droplet)
             phi[counter]=1;
     }    
     writephase("phase");
@@ -826,10 +712,11 @@ void calculate_mass()
 int main(int argc, char* argv[])
 {
 
-    if (argc==3)
+    if (argc==4)
     {
     	radius_droplet=atoi(argv[1]);
     	wall_gradient=atof(argv[2]);
+        force_x_hydro=atof(argv[3]);
 	}
 	std::cout<<"Radius of the droplet is "<<radius_droplet<<"\n";
 	std::cout<<"Wall gradient is "<<wall_gradient<<"\n";
@@ -846,11 +733,11 @@ int main(int argc, char* argv[])
             force_x=force_x_hydro;
             flag_hydro=false;
             std::cout<<"Size of the array"<<sizeof(f)<<"\n";
-            std::memcpy(f,h,sizeof(f));
-            std::memcpy(f2,h2,sizeof(f2));
-            std::memcpy(rho_f,rho_h,sizeof(rho_f));
-            std::memcpy(ux_f,ux_h,sizeof(ux_f));
-            std::memcpy(uy_f,uy_h,sizeof(uy_f));
+            memcpy(f,h,sizeof(f));
+            memcpy(f2,h2,sizeof(f2));
+            memcpy(rho_f,rho_h,sizeof(rho_f));
+            memcpy(ux_f,ux_h,sizeof(ux_f));
+            memcpy(uy_f,uy_h,sizeof(uy_f));
         }
         update_phase();
         collide_bulk();
@@ -891,58 +778,5 @@ int main(int argc, char* argv[])
 
 	}
     
-/*	
-	#ifdef READ_FILE
-    readvtk("../Symmetric/20/Grad-35/vtk0020000");
-    #else
-    #endif
-    
-    
-    
-    init();
-       
-
-	for(int counter=0;counter<=N;counter++)
-	{
-        update_phase();
-        collide_bulk();
-        update_bounce_back();
-		stream();
-        
-	    if (counter%NSIGNAL==0)
-	    {
-	    	std::cout<<"Counter="<<counter<<"\n";
-    		calculate_mass();
-    	}
-		//Writing files
-		if (counter%NOUTPUT==0)
-		{
-			std::stringstream filewritedensity;
-  			std::stringstream filewritevelocityx;
-  			std::stringstream filewritevelocityy;
- 			std::stringstream filevtk;
- 			
- 			std::stringstream counterconvert;
- 			counterconvert<<counter;
- 			filewritedensity<<std::fixed;
- 			filewritevelocityx<<std::fixed;
- 			filewritevelocityy<<std::fixed;
- 			filevtk<<std::fixed;
-
-			//filewritedensity<<"den"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			//filewritevelocityx<<"velx"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			//filewritevelocityy<<"vely"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			filevtk<<"vtk"<<std::string(7-counterconvert.str().size(),'0')<<counter;
-			
- 			writedensity(filewritedensity.str());
- 			writevelocityx(filewritevelocityx.str());
- 			writevelocityy(filewritevelocityy.str());
- 			writevtk(filevtk.str());
-		}
-
-	}
-
-    finish_simulation();
-   */
    	return 0;
 }
