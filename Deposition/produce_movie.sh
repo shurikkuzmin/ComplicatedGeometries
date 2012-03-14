@@ -1,0 +1,1 @@
+mencoder mf://*jpg -o threeFluids.flv -of lavf -ovc lavc -nosound -lavcopts vcodec=flv:vbitrate=500:autoaspect:mbd=2:mv0:trell:v4mv:cbp:last_pred=3:predia=2:dia=2:precmp=2:cmp=2:subcmp=2:preme=2:turbo
