@@ -79,33 +79,19 @@ def copy_from_computer(file_visc_dir):
     radii_str=["20"]
     forces=[0.000001,0.000002,0.000003,0.000004,0.000005]
     forces_str=["1","2","3","4","5"]
-    viscosity_ratios=[3,10]
-    wall_gradients_str=["Grad"+str(x) for x in range(-40,50,10)]
-    wall_gradients=[str(x) for x in range(-40,50,10)]
-
-    for wall_counter,wall_gradient_str in enumerate(wall_gradients_str):
-        for force_counter,force in enumerate(forces):
-            subprocess.call(['scp','129.128.34.145:/home/shurik/Documents/Projects/ComplicatedGeometries/FilesViscosity/20/'\
-            +file_visc_dir+"/"+wall_gradient_str+"/"+forces_str[force_counter]+"/*.avi",'.'])
-def delete_from_computer(file_visc_dir):
-    radii_str=["20"]
-    forces=[0.000001,0.000002,0.000003,0.000004,0.000005]
-    forces_str=["1","2","3","4","5"]
     viscosity_ratios=[5,10,15,20]
     wall_gradients_str=["Grad"+str(x) for x in range(-40,50,10)]
     wall_gradients=[str(x) for x in range(-40,50,10)]
 
-    full_path=os.curdir
     for wall_counter,wall_gradient_str in enumerate(wall_gradients_str):
         for force_counter,force in enumerate(forces):
-           print full_path 
-           # subprocess.call(['scp','129.128.34.145:/home/shurik/Documents/Projects/ComplicatedGeometries/FilesViscosity/20/'\
-           # +file_visc_dir+"/"+wall_gradient_str+"/"+forces_str[force_counter]+"/*.avi",'.'])
-                    
+            #subprocess.call(['scp','bugaboo:/home/shurik/Projects/ComplicatedGeometries/FilesViscosity/20/'\
+            #+file_visc_dir+"/"+wall_gradient_str+"/"+forces_str[force_counter]+"/*.avi",'.'])
+            subprocess.call(['scp','bugaboo.westgrid.ca:/home/shurik/Movies/'\
+            +"movie_viscratio"+file_visc_dir+"_"+wall_gradient_str+"-"+forces_str[force_counter]+".avi",'.'])
 if __name__=="__main__":
     #file_dir="20/10/Grad-10/5"
     #visualize_particular_simulation(file_dir)   
     #visualize()
-    copy_from_computer("10")
-    #delete_from_computer("1")
+    copy_from_computer("5")
     
