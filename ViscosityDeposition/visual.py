@@ -1,7 +1,7 @@
 import numpy
 import pylab
 import time
-import vtk
+#import vtk
 import subprocess
 import os
 
@@ -85,12 +85,12 @@ def copy_from_computer(file_visc_dir):
 
     for wall_counter,wall_gradient_str in enumerate(wall_gradients_str):
         for force_counter,force in enumerate(forces):
-            subprocess.call(['scp','129.128.34.145:/home/shurik/Documents/Projects/ComplicatedGeometries/FilesViscosity/'\
+            subprocess.call(['scp','shurik@129.128.34.145:/home/shurik/Documents/Projects/ComplicatedGeometries/FilesViscosity/20/'\
             +file_visc_dir+"/"+wall_gradient_str+"/"+forces_str[force_counter]+"/*.avi",'.'])
                     
 if __name__=="__main__":
     #file_dir="20/10/Grad-10/5"
     #visualize_particular_simulation(file_dir)   
     #visualize()
-    copy_from_computer("5")
+    copy_from_computer("10")
     
