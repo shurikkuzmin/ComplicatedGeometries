@@ -6,6 +6,12 @@ def read_vtk(file_name):
     #constants of binary liquid model
     aconst=0.04
     kconst=0.04
+    global call_counter
+    #styles=['ks','ks','k+','k+','ko','ko','kv','kv']
+    styles=['ks','ko','k+','kD','k*','kH','kv','k^']
+
+    call_counter=call_counter+1
+    print call_counter
     
     gridreader = vtk.vtkStructuredGridReader() 
     gridreader.SetFileName(file_name)
@@ -41,21 +47,23 @@ def read_vtk(file_name):
     positive=numpy.logical_and(phase>=-0.01,phase<1.1)
     droplet[positive]=1
     
-    pylab.figure()
-    pylab.imshow(velx)
-    pylab.contour(droplet,levels=[0.0])
-    pylab.figure()
-    pylab.imshow(vely)
-    pylab.contour(droplet,levels=[0.0])
-    pylab.figure()
+    #pylab.figure()
+    #pylab.imshow(velx)
+    #pylab.contour(droplet,levels=[0.0])
+    #pylab.figure()
+    #pylab.imshow(vely)
+    #pylab.contour(droplet,levels=[0.0])
+    pylab.figure(98)
     pylab.title("Droplet shape")
-    cont=pylab.contour(droplet,levels=[0.0])
+    cont=pylab.contour(droplet,styles[call_counter],levels=[0.0])
     
+    pylab.figure(99)
     path0=cont.collections[0].get_paths()[0]
     coor_drop=path0.vertices
+    pylab.plot(coor_drop[:,0],coor_drop[:,1],styles[call_counter],markersize=5,markerfacecolor="None")
     #get the largest coordinate and start counting from it
     velx_circle=[]
-    ind=-0
+    ind=0
     ind_value=-100
     ind_other=0
     ind_value_other=1000
@@ -77,8 +85,11 @@ def read_vtk(file_name):
     x=numpy.roll(x,-ind)
     y=numpy.roll(y,-ind)    
     velx_circle=numpy.roll(velx_circle,-ind)
-    pylab.figure()
-    pylab.plot(velx_circle)
+    pylab.figure(100)
+    middle_range=128
+    velx_range=numpy.arange(0,len(velx_circle))+middle_range-len(velx_circle)/2
+    pylab.plot(velx_range,velx_circle,styles[call_counter],markersize=5,markerfacecolor="white")
+    pylab.xlim(0,2*middle_range)
     
     bulk_pressure=density/3.0+aconst*(-0.5*phase*phase+3.0/4.0*phase*phase*phase*phase)
     xdom,ydom=numpy.mgrid[0:dims[1],0:dims[0]]
@@ -91,9 +102,9 @@ def read_vtk(file_name):
     ydroplet=int(numpy.mean(y))
     print xdroplet
     print ydroplet
-    pylab.figure()
-    pylab.imshow(bulk_pressure)
-    pylab.colorbar()
+    #pylab.figure()
+    #pylab.imshow(bulk_pressure)
+    #pylab.colorbar()
     #pressure difference - if bubble is nice
     pressure_difference_nice=numpy.mean(bulk_pressure[ydroplet-2:ydroplet+2,xdroplet-2:xdroplet+2])\
                        -numpy.mean(bulk_pressure[98:102,0:5])
@@ -103,47 +114,43 @@ def read_vtk(file_name):
     print "Pressure difference nice=",pressure_difference_nice
     print "Pressure difference bad=",pressure_difference_bad
     print "Index=",int(ind+ind_other)/2
-    
-    #calculate pressure difference averaged
-    #take the averaged droplet coordinate
-    
-        
-#    print coor_drop[:,0]
-#    print coor_drop[:,1]
-#    tck = interpolate.bisplrep(x,y,velx)
-#    values = interpolate.bisplev(coor_drop[:,0],coor_drop[:,1],tck)
-#    print values
-    #print znew  
-    #pylab.plot(coor_drop[:,0],coor_drop[:,1],"+")
-    #pylab.plot(coor_wall[:,0],coor_wall[:,1],"o")
-    #center=phase[:,dims[1]/2]
-    #min_coor_wall=min(numpy.where(center>1.2)[0])
-    #max_coor_wall=max(numpy.where(center>1.2)[0])
+    return pressure_difference_bad
 
-   # pylab.figure()
-   # coor_one_droplet=numpy.where(coor_drop[:,1]>max_coor_wall)
-   # print coor_drop[coor_one_droplet,0].ravel()
-   # coorx=coor_drop[coor_one_droplet,0].ravel()
-   # coory=coor_drop[coor_one_droplet,1].ravel()
-   # coor=zip(coorx,coory)
-   # coor=numpy.array(sorted(coor, key=itemgetter(0)))
-   # pylab.plot(coor[:,0],coor[:,1],"o")    
-   # window=5    
-   # vecx=coor[window,0]-coor[0,0]
-   # vecy=coor[window,1]-coor[0,1]
-   # 
-   # return 180.0/math.pi*math.atan2(vecy,vecx)
-                  
-#        print "Done with vtk processing"
-#        fig=pylab.figure(1)
-#        pylab.imshow(phase)
-#        #fig.show()
-#        pylab.savefig(file_name[:-4]+".jpg")
-#        pylab.close()
-#        print file_name+" is processed"
 
+def compare():
+    global call_counter
+    call_counter=-1
+    #file_list=["vtk0036000_Grad-20_1.vtk","vtk0037000_Grad-20_1.vtk",\
+    #           "vtk0028000_Grad-20_2.vtk","vtk0029000_Grad-20_2.vtk",\
+    #		   "vtk0024000_Grad-20_3.vtk","vtk0025000_Grad-20_3.vtk",\
+    #		   "vtk0022000_Grad-20_4.vtk","vtk0023000_Grad-20_4.vtk"]
+    file_list=["vtk0036000_Grad0_1.vtk","vtk0037000_Grad0_1.vtk",\
+               "vtk0028000_Grad0_2.vtk","vtk0029000_Grad0_2.vtk",\
+    		   "vtk0024000_Grad0_3.vtk","vtk0025000_Grad0_3.vtk",\
+    		   "vtk0022000_Grad0_4.vtk","vtk0023000_Grad0_4.vtk"]
+    		   
+    pressures=[]
+    for file_name in file_list:
+        pressure=read_vtk(file_name)
+        pressures.append(pressure)
+    pylab.figure(99)
+    legs=[x[-12:-4] for x in file_list]
+    pylab.savefig("shape_for_grad0.eps",format="EPS")
+    pylab.legend(legs)
+    pylab.figure(100)
+    pylab.legend(legs)
+    pylab.savefig("velocities_for_grad0.eps",format="EPS")
+    pylab.figure(102)
+    print pressures
+    pylab.plot([1,1,2,2,3,3,4,4],pressures,'bs',markersize=8)
+    print numpy.mean(pressures)*numpy.arange(1,5)
+    pylab.savefig("pressure_for_grad0.eps",format="EPS")
+    pylab.plot([1,2,3,4],4*[numpy.mean(pressures)],"r-",linewidth=3)
+    pylab.ylim(0,0.003)
+    
 if __name__=="__main__":
-    file_name="vtk0019000.vtk"
-    read_vtk(file_name)
+    #file_name="vtk0018000.vtk"
+    #read_vtk(file_name)
+    compare()
     pylab.show()
 
