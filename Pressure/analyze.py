@@ -8,7 +8,7 @@ def read_vtk(file_name):
     kconst=0.04
     global call_counter
     #styles=['ks','ks','k+','k+','ko','ko','kv','kv']
-    styles=['ks','ko','k+','kD','k*','kH','kv','k^']
+    styles=['ks','ko','k+','kD','k*','kH','kv','k^','kh','k-']
 
     call_counter=call_counter+1
     print call_counter
@@ -129,20 +129,20 @@ def compare():
     for file_name in file_list:
         pressure=read_vtk(file_name)
         pressures.append(pressure)
-    #pylab.figure(99)
-    #legs=[x[-12:-4] for x in file_list]
-    #pylab.savefig("shape_for_grad0.eps",format="EPS")
-    #pylab.legend(legs)
-    #pylab.figure(100)
-    #pylab.legend(legs)
+    pylab.figure(99)
+    legs=[x[11:14] for x in file_list]
+    pylab.savefig("shape_for_grad-20.eps",format="EPS")
+    pylab.legend(legs)
+    pylab.figure(100)
+    pylab.legend(legs)
     # pylab.savefig("velocities_for_grad0.eps",format="EPS")
-    #pylab.figure(102)
+    pylab.figure(102)
     print pressures
-    #pylab.plot([1,1,2,2,3,3,4,4,5,5],pressures,'bs',markersize=8)
+    pylab.plot([10,10,20,20,30,30,40,40,50,50],pressures,'bs',markersize=8)
     print numpy.mean(pressures)*numpy.arange(1,5)
-    #pylab.savefig("pressure_for_grad0.eps",format="EPS")
-    # pylab.plot([1,2,3,4,5],5*[numpy.mean(pressures)],"r-",linewidth=3)
-    #pylab.ylim(0,0.003)
+    pylab.savefig("pressure_for_grad-20.eps",format="EPS")
+    pylab.plot([1,2,3,4,5],5*[numpy.mean(pressures)],"r-",linewidth=3)
+    pylab.ylim(ymin=0)
     
 if __name__=="__main__":
     #file_name="vtk0018000.vtk"
