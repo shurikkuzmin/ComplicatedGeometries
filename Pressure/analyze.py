@@ -110,7 +110,7 @@ def read_vtk(file_name):
                        -numpy.mean(bulk_pressure[98:102,0:5])
     #pressure difference -if bubble is not nice
     pressure_difference_bad=bulk_pressure[ydroplet,int(ind_value+ind_value_other)/2]\
-            -numpy.mean(bulk_pressure[98:102,0:5])
+            -numpy.mean(bulk_pressure[98:102,0:5])-(1e-6)*(ind_value+ind_value_other)/2
     print "Pressure difference nice=",pressure_difference_nice
     print "Pressure difference bad=",pressure_difference_bad
     print "Index=",int(ind+ind_other)/2
