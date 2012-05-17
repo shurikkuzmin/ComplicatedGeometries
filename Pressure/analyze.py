@@ -1,8 +1,9 @@
 import numpy
 import pylab
-import vtk
-from scipy import interpolate
 def read_vtk(file_name):
+    import vtk
+    from scipy import interpolate
+    
     #constants of binary liquid model
     aconst=0.04
     kconst=0.04
@@ -26,9 +27,11 @@ def read_vtk(file_name):
     print dims
     phase_orig=data.GetArray("phase")
     density_orig=data.GetArray("density")
+    density_one_orig=data.GetArray("density_one_component")
     velocity_orig=data.GetArray("velocity")
     phase=numpy.zeros([dims[0],dims[1]])
     density=numpy.zeros([dims[0],dims[1]])
+    density_one=numpy.zeros([dims[0],dims[1]])
     velx=numpy.zeros([dims[0],dims[1]])
     vely=numpy.zeros([dims[0],dims[1]])
 
@@ -37,10 +40,12 @@ def read_vtk(file_name):
              counter=coory*dims[0]+coorx
              phase[coorx,coory]=phase_orig.GetTuple1(counter)
              density[coorx,coory]=density_orig.GetTuple1(counter)
+             density_one[coorx,coory]=density_one_orig.GetTuple1(counter)
              velx[coorx,coory]=velocity_orig.GetTuple3(counter)[0]
              vely[coorx,coory]=velocity_orig.GetTuple3(counter)[1]
     phase=phase.transpose()
     density=density.transpose()
+    density_one=density_one.transpose()
     velx=velx.transpose()
     vely=vely.transpose()
     droplet=numpy.zeros_like(phase)
@@ -110,7 +115,8 @@ def read_vtk(file_name):
                        -numpy.mean(bulk_pressure[98:102,0:5])
     #pressure difference -if bubble is not nice
     pressure_difference_bad=bulk_pressure[ydroplet,int(ind_value+ind_value_other)/2]\
-            -numpy.mean(bulk_pressure[98:102,0:5])-(1e-6)*(ind_value+ind_value_other)/2
+            -1.0/3.0*density_one[ydroplet,(ind_value+ind_value_other)/2]
+            #+1.0/3.0*numpy.mean(density_one[98:102,0:5])\        
     print "Pressure difference nice=",pressure_difference_nice
     print "Pressure difference bad=",pressure_difference_bad
     print "Index=",int(ind+ind_other)/2
@@ -121,17 +127,26 @@ def compare():
     global call_counter
     call_counter=-1
     file_list=["vtk0035000_R10_Grad-20_F1.vtk","vtk0036000_R10_Grad-20_F1.vtk",
-               "vtk0034000_R20_Grad-20_F1.vtk","vtk0035000_R20_Grad-20_F1.vtk",
-               "vtk0033000_R30_Grad-20_F1.vtk","vtk0034000_R30_Grad-20_F1.vtk",
-               "vtk0033000_R40_Grad-20_F1.vtk","vtk0034000_R40_Grad-20_F1.vtk",
-               "vtk0033000_R50_Grad-20_F1.vtk","vtk0032000_R50_Grad-20_F1.vtk"]    		   
+              "vtk0034000_R20_Grad-20_F1.vtk","vtk0035000_R20_Grad-20_F1.vtk",
+              "vtk0033000_R30_Grad-20_F1.vtk","vtk0034000_R30_Grad-20_F1.vtk",
+              "vtk0033000_R40_Grad-20_F1.vtk","vtk0034000_R40_Grad-20_F1.vtk",
+              "vtk0033000_R50_Grad-20_F1.vtk","vtk0032000_R50_Grad-20_F1.vtk"]    		   
+    #file_list=["vtk0020000_R10_Grad-20_F5.vtk","vtk0021000_R10_Grad-20_F5.vtk",
+    #           "vtk0020000_R20_Grad-20_F5.vtk","vtk0021000_R20_Grad-20_F5.vtk",
+    #           "vtk0020000_R30_Grad-20_F5.vtk","vtk0021000_R30_Grad-20_F5.vtk",
+    #           "vtk0020000_R40_Grad-20_F5.vtk","vtk0021000_R40_Grad-20_F5.vtk",
+    #           "vtk0020000_R50_Grad-20_F5.vtk","vtk0021000_R50_Grad-20_F5.vtk"]    		   
+ 
     pressures=[]
     for file_name in file_list:
         pressure=read_vtk(file_name)
         pressures.append(pressure)
+    #numpy.savetxt("pressures_Grad-20_F5.txt",pressures)
+    numpy.savetxt("pressures_Grad-20.txt",pressures)
     pylab.figure(99)
     legs=[x[11:14] for x in file_list]
-    pylab.savefig("shape_for_grad-20.eps",format="EPS")
+    #pylab.savefig("shape_for_grad-20_F5.eps",format="EPS")
+    pylab.savefig("shape_for_grad-20_F5.eps",format="EPS")
     pylab.legend(legs)
     pylab.figure(100)
     pylab.legend(legs)
@@ -140,13 +155,25 @@ def compare():
     print pressures
     pylab.plot([10,10,20,20,30,30,40,40,50,50],pressures,'bs',markersize=8)
     print numpy.mean(pressures)*numpy.arange(1,5)
+    #pylab.savefig("pressure_for_grad-20_F5.eps",format="EPS")
     pylab.savefig("pressure_for_grad-20.eps",format="EPS")
     pylab.plot([1,2,3,4,5],5*[numpy.mean(pressures)],"r-",linewidth=3)
     pylab.ylim(ymin=0)
+
+def compare_pressures():
+    force1=numpy.loadtxt("pressures_Grad-20.txt")
+    force5=numpy.loadtxt("pressures_Grad-20_F5.txt")
     
+    #force1=force1.reshape(len(force1)/2,2)
+    #force5=force5.reshape(len(force5)/2,2)
+    pylab.plot([10,10,20,20,30,30,40,40,50,50],force1,'o')
+    pylab.plot([10,10,20,20,30,30,40,40,50,50],force5,'s')
+    pylab.ylim(ymin=0.0)
+    pylab.savefig("pressures_vs_forces.eps")
 if __name__=="__main__":
     #file_name="vtk0018000.vtk"
     #read_vtk(file_name)
-    compare()
+    #compare()
+    compare_pressures()
     pylab.show()
 
