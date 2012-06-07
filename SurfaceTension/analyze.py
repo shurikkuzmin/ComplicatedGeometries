@@ -115,8 +115,13 @@ def read_vtk(file_name):
                        -numpy.mean(bulk_pressure[98:102,0:5])
     #pressure difference -if bubble is not nice
     pressure_difference_bad=bulk_pressure[ydroplet,int(ind_value+ind_value_other)/2]\
-            -1.0/3.0*density_one[ydroplet,(ind_value+ind_value_other)/2]
-            #+1.0/3.0*numpy.mean(density_one[98:102,0:5])\        
+            -bulk_pressure[ydroplet,1]        
+    print bulk_pressure[ydroplet,1]
+    print bulk_pressure[ydroplet,int(ind_value+ind_value_other)/2]
+    print ydroplet
+            #-1.0/3.0*density_one[ydroplet,(ind_value+ind_value_other)/2]
+            #-1.0/3.0*bulk_pressure[ydroplet,1]        
+    #pressure_difference_bad=bulk_pressure[ydroplet,int(ind_value+ind_value_other)/2]-1.0/3.0-aconst*0.25
     print "Pressure difference nice=",pressure_difference_nice
     print "Pressure difference bad=",pressure_difference_bad
     print "Index=",int(ind+ind_other)/2
@@ -126,6 +131,11 @@ def read_vtk(file_name):
 def compare():
     global call_counter
     call_counter=-1
+    ratio04_begin=["vtk0010000_R10_Grad-20_F1_Ratio04.vtk","vtk0010000_R10_Grad-20_F1_Ratio04.vtk",
+             "vtk0010000_R20_Grad-20_F1_Ratio04.vtk","vtk0010000_R20_Grad-20_F1_Ratio04.vtk",
+             "vtk0010000_R30_Grad-20_F1_Ratio04.vtk","vtk0010000_R30_Grad-20_F1_Ratio04.vtk",
+             "vtk0010000_R40_Grad-20_F1_Ratio04.vtk","vtk0010000_R40_Grad-20_F1_Ratio04.vtk",
+             "vtk0010000_R50_Grad-20_F1_Ratio04.vtk","vtk0010000_R50_Grad-20_F1_Ratio04.vtk"]
     ratio04=["vtk0036000_R10_Grad-20_F1_Ratio04.vtk","vtk0037000_R10_Grad-20_F1_Ratio04.vtk",
              "vtk0035000_R20_Grad-20_F1_Ratio04.vtk","vtk0036000_R20_Grad-20_F1_Ratio04.vtk",
              "vtk0035000_R30_Grad-20_F1_Ratio04.vtk","vtk0036000_R30_Grad-20_F1_Ratio04.vtk",
@@ -145,7 +155,7 @@ def compare():
              "vtk0034000_R20_Grad-20_F1_Ratio16.vtk","vtk0035000_R20_Grad-20_F1_Ratio16.vtk",
              "vtk0033000_R30_Grad-20_F1_Ratio16.vtk","vtk0034000_R30_Grad-20_F1_Ratio16.vtk",
              "vtk0032000_R40_Grad-20_F1_Ratio16.vtk","vtk0033000_R40_Grad-20_F1_Ratio16.vtk",
-	         "vtk0032000_R50_Grad-20_F1_Ratio16.vtk","vtk0033000_R50_Grad-20_F1_Ratio16.vtk"]	   		   
+	     "vtk0032000_R50_Grad-20_F1_Ratio16.vtk","vtk0033000_R50_Grad-20_F1_Ratio16.vtk"]	   		   
  
     pressures=[]
     file_list=ratio16
