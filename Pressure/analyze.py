@@ -178,11 +178,18 @@ def compare_pressures():
     pylab.savefig("pressures_vs_forces.eps")
 
 def initial_pressures():
-    file_list=["vtk0010000_Grad-20_R10_F1.vtk","vtk0010000_Grad-20_R10_F5.vtk",
-              "vtk0010000_Grad-20_R20_F1.vtk","vtk0010000_Grad-20_R20_F5.vtk",
-              "vtk0010000_Grad-20_R30_F1.vtk","vtk0010000_Grad-20_R30_F5.vtk",
-              "vtk0010000_Grad-20_R40_F1.vtk","vtk0010000_Grad-20_R40_F5.vtk",
-              "vtk0010000_Grad-20_R50_F1.vtk","vtk0010000_Grad-20_R50_F5.vtk"]    		   
+    #file_list=["vtk0010000_Grad-20_R10_F1.vtk","vtk0010000_Grad-20_R10_F5.vtk",
+    #          "vtk0010000_Grad-20_R20_F1.vtk","vtk0010000_Grad-20_R20_F5.vtk",
+    #          "vtk0010000_Grad-20_R30_F1.vtk","vtk0010000_Grad-20_R30_F5.vtk",
+    #          "vtk0010000_Grad-20_R40_F1.vtk","vtk0010000_Grad-20_R40_F5.vtk",
+    #          "vtk0010000_Grad-20_R50_F1.vtk","vtk0010000_Grad-20_R50_F5.vtk"]    		   
+    file_list=["vtk0018000_R10_Grad-20_F5.vtk",
+               "vtk0018000_R20_Grad-20_F5.vtk",
+               "vtk0018000_R30_Grad-20_F5.vtk",
+               "vtk0018000_R40_Grad-20_F5.vtk",
+               "vtk0018000_R50_Grad-20_F5.vtk"]    		   
+
+
     global call_counter
     call_counter=-1
     pressures_in=[]
@@ -198,11 +205,11 @@ def initial_pressures():
     
     pressures_in=numpy.array(pressures_in)
     pressures_out=numpy.array(pressures_out)
-    numpy.savetxt("pressures_in.txt",pressures_in)
-    numpy.savetxt("pressures_out.txt",pressures_out)
-    numpy.savetxt("phases_in.txt",phases_in)
-    numpy.savetxt("phases_out.txt",phases_out)
-    numpy.savetxt("initial_pressures.txt",zip(pressures_in,pressures_out,phases_in,phases_out))
+    #numpy.savetxt("pressures_in.txt",pressures_in)
+    #numpy.savetxt("pressures_out.txt",pressures_out)
+    #numpy.savetxt("phases_in.txt",phases_in)
+    #numpy.savetxt("phases_out.txt",phases_out)
+    numpy.savetxt("initial_pressures_before_collision.txt",zip(pressures_in,pressures_out,phases_in,phases_out))
     #pylab.figure(99)
     #legs=[x[11:14] for x in file_list]
     #pylab.savefig("shape_for_grad-20_F5.eps",format="EPS")
@@ -288,15 +295,18 @@ def compare():
 
 def compare_with_initial():
     init_pressures=numpy.loadtxt("initial_pressures.txt")
+    init_pressures_before_collision=numpy.loadtxt("initial_pressures_before_collision.txt")
     pressures=numpy.loadtxt("pressures_Grad-20_another_approach.txt")
     pressures_F5=numpy.loadtxt("pressures_Grad-20_F5_another_approach.txt")
     densities_F5=numpy.loadtxt("densities_Grad-20_F5_another_approach.txt")
     pylab.figure(1)
     radii=numpy.array([10,10,20,20,30,30,40,40,50,50])
+    radii2=numpy.array([10,20,30,40,50])
     
     pylab.plot(radii,pressures,'go',markersize=8)
     pylab.plot(radii,pressures_F5,'k^',markersize=8)
     pylab.plot(radii,init_pressures[:,0]-init_pressures[:,1],'bs',markersize=8,markerfacecolor=None)
+    pylab.plot(radii2,init_pressures_before_collision[:,0]-init_pressures_before_collision[:,1],'kv',markersize=8)
     #pylab.plot(radii,pressures_F5+1.0/3.0-1.0/3.0*densities_F5,'kv',markersize=12)
     sigma=numpy.sqrt(aconst*kconst*8.0/9.0)
     
@@ -304,7 +314,7 @@ def compare_with_initial():
     pylab.plot(radii,sigma*1.0/radii,'r+-')
     # Biased pressure difference
     pylab.plot(radii,init_pressures[:,0]-1.0/3.0-0.25*aconst,'kd')
-    pylab.legend(["Pressures_F1","Pressures_F5","Init_pressures"])
+    pylab.legend(["Pressures_F1","Pressures_F5","Init_pressures","Init_pressures_bef_collision_F5"])
     pylab.savefig("comparison_another_approach.eps",dpi=300)
 
 
