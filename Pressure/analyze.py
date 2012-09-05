@@ -317,14 +317,61 @@ def compare_with_initial():
     pylab.legend(["Pressures_F1","Pressures_F5","Init_pressures","Init_pressures_bef_collision_F5"])
     pylab.savefig("comparison_another_approach.eps",dpi=300)
 
+def make_nice_graphs():
+    file_list=["vtk0035000_R10_Grad-20_F1.vtk","vtk0034000_R20_Grad-20_F1.vtk",
+               "vtk0033000_R30_Grad-20_F1.vtk","vtk0033000_R40_Grad-20_F1.vtk",
+               "vtk0032000_R50_Grad-20_F1.vtk"]
+    file_list=["vtk0020000_R10_Grad-20_F5.vtk","vtk0020000_R20_Grad-20_F5.vtk",
+               "vtk0020000_R30_Grad-20_F5.vtk","vtk0020000_R40_Grad-20_F5.vtk",
+               "vtk0020000_R50_Grad-20_F5.vtk"]
+    #file_list=["vtk0035000_R10_Grad-20_F1.vtk","vtk0036000_R10_Grad-20_F1.vtk",
+    #          "vtk0034000_R20_Grad-20_F1.vtk","vtk0035000_R20_Grad-20_F1.vtk",
+    #          "vtk0033000_R30_Grad-20_F1.vtk","vtk0034000_R30_Grad-20_F1.vtk",
+    #          "vtk0033000_R40_Grad-20_F1.vtk","vtk0034000_R40_Grad-20_F1.vtk",
+    #          "vtk0033000_R50_Grad-20_F1.vtk","vtk0032000_R50_Grad-20_F1.vtk"]    		   
+    #file_list=["vtk0020000_R10_Grad-20_F5.vtk","vtk0021000_R10_Grad-20_F5.vtk",
+    #           "vtk0020000_R20_Grad-20_F5.vtk","vtk0021000_R20_Grad-20_F5.vtk",
+    #           "vtk0020000_R30_Grad-20_F5.vtk","vtk0021000_R30_Grad-20_F5.vtk",
+    #           "vtk0020000_R40_Grad-20_F5.vtk","vtk0021000_R40_Grad-20_F5.vtk",
+    #           "vtk0020000_R50_Grad-20_F5.vtk","vtk0021000_R50_Grad-20_F5.vtk"]    		   
 
+    #styles=['ks','ko','k+','kD','k*','kH','kv','k^','kh','k-']
+    
+    styles=['k-','k-.','k--','k:','k.','kH','kv','k^','kh','k-']
 
+    for file_counter,file_name in enumerate(file_list):
+        phase,density,density_one,velx,vely,dims=read_vtk(file_name)
+    
+        droplet=numpy.zeros_like(phase)
+        positive=numpy.logical_and(phase>=-0.01,phase<1.1)
+        droplet[positive]=1
+    
+        # First figure is to get coordinates
+        pylab.figure(1)
+        pylab.title("Droplet shape")
+        cont=pylab.contour(droplet,levels=[0.0])
+        path0=cont.collections[0].get_paths()[0]
+        coor_drop=path0.vertices
+ 
+        pylab.figure(2)
+        pylab.plot(coor_drop[:,0],coor_drop[:,1],styles[file_counter],linewidth=2,markersize=3)
+        
+    pylab.figure(2)
+    pylab.title("Droplet shapes",fontsize=30)
+    pylab.xlim((190,350))
+    pylab.ylim((20,180))
+    pylab.xlabel(r'''$x$''',fontsize=20)
+    pylab.ylabel(r'''$y$''',fontsize=20)
+    pylab.legend(["Radius=10","Radius=20","Radius=30","Radius=40","Radius=50"])
+    pylab.savefig("shapes_F5_Grad-20.eps")
+    
+    
 if __name__=="__main__":
     #file_name="vtk0018000.vtk"
     #read_vtk(file_name)
     #compare()
-    
-    compare_with_initial()
+    make_nice_graphs()
+    #compare_with_initial()
     #compare_pressures()
     #initial_pressures()
     #initial_pressures_read_files()
