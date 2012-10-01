@@ -344,17 +344,36 @@ def circle_analysis():
         theor.append(180.0/math.pi*fsolve(f,math.pi/120*counter,args=(grad)))   
     pylab.figure(1)    
     angles=numpy.array(angles)    
-    pylab.plot(0.01*gradients,angles[:,0],"k+")
-    pylab.plot(0.01*gradients,angles[:,1],"ko")
-    pylab.plot(0.01*gradients,angles[:,2],"ks")
-
-    
-    pylab.plot(grads,theor,"+")
+    #pylab.plot(0.01*gradients,angles[:,0],"k+")
+    #pylab.plot(0.01*gradients,angles[:,1],"ko")
+    gradients=0.01*gradients
+    pylab.plot(gradients,angles[:,2],"ko",markersize=8)
+    theor=numpy.array(theor)
+    good_ind=numpy.where(numpy.logical_and(theor>5,theor<170))
+    theor=theor[good_ind]
+    grads=grads[good_ind]
+    pylab.plot(grads,theor,"k-",linewidth=3)
+    numpy.savetxt("theoretical.dat",zip(grads.tolist(),theor.tolist()))
+    numpy.savetxt("circle.dat",zip(gradients.tolist(),angles[:,2].tolist()))
+  
     pylab.ylim(ymin=0.0,ymax=180.0)
     pylab.savefig("main_curve_circle.eps",format="EPS",dpi=300.0)
+    pylab.legend(["Analytical","Simulations"])
     pylab.figure(99)
     pylab.savefig("different_boxes_circle.eps",format="EPS",dpi=300.0)
 
+def circle_figures():
+    anals=numpy.loadtxt("theoretical.dat")
+    sims=numpy.loadtxt("circle.dat")
+    pylab.plot(anals[:,0],anals[:,1],"k-",linewidth=3)
+    pylab.plot(sims[:,0],sims[:,1],"ko",markersize=8)
+    pylab.legend(["Analytical","Simulations"])
+    pylab.ylim(ymin=0.0,ymax=180.0)
+    pylab.xlabel(r'''$\partial_{\perp}\phi$''',fontsize=20)
+    pylab.ylabel(r'''$\theta_{w}$''',fontsize=20)
+    pylab.savefig("main_curve_circle.eps",format="EPS",dpi=300.0)
+    pylab.title("Contact angle",fontsize=30)
+    
 if __name__=="__main__":
     #file_name="vtk_wall0010000.vtk"    
     #read_file_wall(file_name)
@@ -362,5 +381,6 @@ if __name__=="__main__":
 
     file_name="20/Grad-35/vtk0020000.vtk"
     #read_file_circle(file_name)
-    circle_analysis()
+    #circle_analysis()
+    circle_figures()
     pylab.show()
