@@ -247,8 +247,13 @@ def read_file_circle(file_name):
 
     #return 180.0/math.pi*math.atan2(vecy,vecx)
 
+gl_counter=0
+
 def read_file_circle_clean(file_name):
-    radius=50    
+    radius=50
+    global gl_counter
+    gl_counter=gl_counter+1
+    styles=["k+","ko","ks","kv","k^","kd","kD","kh"]    
 
     gridreader = vtk.vtkStructuredGridReader() 
     gridreader.SetFileName(file_name)
@@ -296,6 +301,23 @@ def read_file_circle_clean(file_name):
     newy=numpy.roll(newy,-counter)
     print counter
     
+    pylab.figure(100)
+    dist=0.0
+    while dist<10:
+        dist=(newx[counter+1]-newx[counter])**2+(newy[counter+1]-newy[counter])**2
+        counter=counter+1
+    
+    pylab.plot(newx[:counter],newy[:counter],"k--",linewidth=3)
+    if gl_counter<2:
+        pylab.plot(coor_wall[:,0],coor_wall[:,1],"k-",linewidth=3)
+    pylab.ylabel(r'''$y$''',fontsize=20)
+    pylab.xlabel(r'''$x$''',fontsize=20)
+    pylab.ylim((60,240))
+    pylab.xlim((60,240))
+    pylab.title("Droplet shapes on a curved substrate",fontsize=20)
+    pylab.savefig("droplet_shapes_curved_substrates",format="EPS")
+    
+    pylab.figure(99)
     #calculate vector
     shift=3
     angles=[]
@@ -332,7 +354,7 @@ def read_file_circle_clean(file_name):
 
 def circle_analysis():
     angles=[]
-    gradients=numpy.arange(-40,40,5)
+    gradients=numpy.arange(-40,41,10)
     
     for gradient in gradients:
         file_name="20/Grad"+str(gradient)+"/vtk0020000.vtk"
@@ -381,6 +403,6 @@ if __name__=="__main__":
 
     file_name="20/Grad-35/vtk0020000.vtk"
     #read_file_circle(file_name)
-    #circle_analysis()
-    circle_figures()
+    circle_analysis()
+    #circle_figures()
     pylab.show()

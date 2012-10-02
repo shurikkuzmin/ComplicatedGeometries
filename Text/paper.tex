@@ -134,39 +134,20 @@ The topic of this work is the deposition of the droplet to the curved substrate.
 
 For example, the work \cite{japan-curved} impose the constat phase value at all solid nodes (instead of constant phase gradient) to calculate the laplacian used in the equilibrium function which drives free energy to have certain contact angle at the surface. However, we feel that this approach is suitable for the equilibrium steady-state approaches, but for the dynamic situation to capture transient phenomena one needs to impose the constant phase gradient value at solid nodes.
 
-The suggested "easy-to-implement" algorithm uses the mirror boundary conditions. Figure \ref{fig:free:surface} shows the staircase approximation of the curved boundaries. 
-Thus, the normal to the boundary which
-is always located by the angle of multiple of $45$ degrees, see Fig. \ref{fig:free:surface}.  Imposing the
-symmetric boundary conditions requires $\phi_{n,F}$=$\phi_{n,B}+\partial_{\perp} \phi$. For any solid boundary nodes, the normal to the staircase approximation was calculated and the phase value was assigned according to the latter equation.  In terms of population, to conserve the mass in the phase domain we used ea  the latter equation can give the value to impose for the calculation of the laplacian and $U_{\tau,F}=U_{\tau,B}$. We can copy poptul
-populations in the certain order to do it, for example $f_{B,i}=f_{F,\bar{i}}$, where $c_i$ and
-$c_{\bar{i}}$ are complementary directions, where $c_{i,n}=-c_{\bar{i},n}$ and
-$c_{i,\tau}=c_{\bar{i},\tau}$, where $c_{i,n}=(\bm{c_i} \cdot \bm{n})\bm{n}$ and
-$c_{i,\tau}=\bm{c_i}-(\bm{c_i}\cdot \bm{n})\bm{n}$.  
+The suggested algorithm uses the mirror boundary conditions. Figure \ref{fig:free:surface} shows the staircase approximation of the curved boundaries. 
+Thus, the normal to the boundary is always located by the angle of multiple of $45$ degrees, see Fig. \ref{fig:free:surface}.  Imposing the
+symmetric boundary conditions requires $\phi_{n,F}$=$\phi_{n,B}+\partial_{\perp} \phi$. For any solid boundary nodes, the normal to the staircase approximation was calculated and the phase value was assigned according to the latter equation.  In terms of population, to conserve the mass in the phase domain we used the bounce-back condition which conserves the mass \cite{yu}.  
 \begin{figure}
-\includegraphics[width=0.5\textwidth]{Figures/free_surface.eps}
+\includegraphics[width=\textwidth]{Figures/free_surface.eps}
 \caption{Free-surface boundary condition represented in the lattice Boltzmann method. 
-Boundary nodes are depicted by crosses, and fluid nodes are represented by dots. One imposes only phase values at the nodes to calculate laplacians used in the equilibrium functions. In the population space, one uses the bounce-back rule \cite{yu-viscous}, which conserves mass.
+Boundary nodes are depicted by crosses, and fluid nodes are represented by dots. One imposes only phase values at the nodes to calculate laplacians used in the equilibrium functions. In the population space, one uses the bounce-back rule \cite{yu}, which conserves mass.
 \label{fig:free:surface}}
 \end{figure}
-
-{\color{red} Include here simple pictures of droplet on curved interface.}
 \begin{figure}
-\includegraphics[width=0.5\textwidth]{Figures/free_surface.eps}
-\caption{Stair-case approximation to the curved substrate. The incoming populations \label{fig:free:surface}}
-\end{figure}
-
-
-\begin{figure}
-\includegraphics[width=\textwidth]{Figures/main_curve_circle.eps}
+\includegraphics[width=0.5\textwidth]{Figures/droplet_shapes_curved_substrates.eps}
+\includegraphics[width=0.5\textwidth]{Figures/main_curve_circle.eps}\\
 \caption{Equilibrium angles at the curved substrate. One can see that the contact angle at the curved substrate mimics the analytically calculated contact angle at the flat substrate. \label{fig:equilibrium:droplet:curved}}
 \end{figure}
-
-One of the suggested 
-{\color{red} Put here explanation and reference to japanese work - plus validation case with all graphs.}
-We present new boundary conditions to fix the angle at the surface.
-
-
-Therefore, for the flat case one needs to be able to impose the phase gradient at a curved substrate, $\partial_{\perp}\phi$. One needs to represent this boundary condition  For the lattice Boltzmann method operating on the rectangular grid with populat 
 
 
 \section{Conclusions}
