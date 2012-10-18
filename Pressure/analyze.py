@@ -95,11 +95,11 @@ def get_droplet(file_name):
     y=numpy.roll(y,-ind)    
     velx_circle=numpy.roll(velx_circle,-ind)
     
-    return x,y,density,phase,ind_value,ind_value_other,dims
+    return x,y,density,phase,ind_value,ind_value_other,dims,density_one
     
 def get_pressure(file_name):
 
-    x,y,density,phase,ind_value,ind_value_other,dims=get_droplet(file_name)
+    x,y,density,phase,ind_value,ind_value_other,dims,density_one=get_droplet(file_name)
      
     # Second figure is to put velocities
     #pylab.figure(2)
@@ -134,7 +134,9 @@ def get_pressure(file_name):
                     
     print "Pressure difference nice=",pressure_difference_nice
     print "Pressure difference bad=",pressure_difference_bad
-    return pressure_difference_bad,density[ydroplet,int(ind_value+ind_value_other)/2]
+    return pressure_difference_bad,density[ydroplet,int(ind_value+ind_value_other)/2],\
+           density_one[ydroplet,int(ind_value+ind_value_other)/2],\
+           phase[ydroplet,int(ind_value+ind_value_other)/2]
 
 def read_all_pressures(file_name):
 
@@ -255,26 +257,32 @@ def initial_pressures_read_files():
 def compare():
     global call_counter
     call_counter=-1
-    #file_list=["vtk0035000_R10_Grad-20_F1.vtk","vtk0036000_R10_Grad-20_F1.vtk",
-    #          "vtk0034000_R20_Grad-20_F1.vtk","vtk0035000_R20_Grad-20_F1.vtk",
-    #          "vtk0033000_R30_Grad-20_F1.vtk","vtk0034000_R30_Grad-20_F1.vtk",
-    #          "vtk0033000_R40_Grad-20_F1.vtk","vtk0034000_R40_Grad-20_F1.vtk",
-    #          "vtk0033000_R50_Grad-20_F1.vtk","vtk0032000_R50_Grad-20_F1.vtk"]    		   
-    file_list=["vtk0020000_R10_Grad-20_F5.vtk","vtk0021000_R10_Grad-20_F5.vtk",
-               "vtk0020000_R20_Grad-20_F5.vtk","vtk0021000_R20_Grad-20_F5.vtk",
-               "vtk0020000_R30_Grad-20_F5.vtk","vtk0021000_R30_Grad-20_F5.vtk",
-               "vtk0020000_R40_Grad-20_F5.vtk","vtk0021000_R40_Grad-20_F5.vtk",
-               "vtk0020000_R50_Grad-20_F5.vtk","vtk0021000_R50_Grad-20_F5.vtk"]    		   
+    file_list=["vtk0035000_R10_Grad-20_F1.vtk","vtk0036000_R10_Grad-20_F1.vtk",
+              "vtk0034000_R20_Grad-20_F1.vtk","vtk0035000_R20_Grad-20_F1.vtk",
+              "vtk0033000_R30_Grad-20_F1.vtk","vtk0034000_R30_Grad-20_F1.vtk",
+              "vtk0033000_R40_Grad-20_F1.vtk","vtk0034000_R40_Grad-20_F1.vtk",
+              "vtk0033000_R50_Grad-20_F1.vtk","vtk0032000_R50_Grad-20_F1.vtk"]    		   
+    #file_list=["vtk0020000_R10_Grad-20_F5.vtk","vtk0021000_R10_Grad-20_F5.vtk",
+    #           "vtk0020000_R20_Grad-20_F5.vtk","vtk0021000_R20_Grad-20_F5.vtk",
+    #           "vtk0020000_R30_Grad-20_F5.vtk","vtk0021000_R30_Grad-20_F5.vtk",
+    #           "vtk0020000_R40_Grad-20_F5.vtk","vtk0021000_R40_Grad-20_F5.vtk",
+    #           "vtk0020000_R50_Grad-20_F5.vtk","vtk0021000_R50_Grad-20_F5.vtk"]    		   
  
     pressures=[]
     densities=[]
+    densities_one=[]
+    phases=[]
     for file_name in file_list:
-        pressure,density=get_pressure(file_name)
+        pressure,density,density_one,phase=get_pressure(file_name)
         pressures.append(pressure)
         densities.append(density)
+        densities_one.append(density_one)
+        phases.append(phase)
     #numpy.savetxt("pressures_Grad-20_F5.txt",pressures)
     #numpy.savetxt("pressures_Grad-20_another_approach.txt",pressures)
-    numpy.savetxt("densities_Grad-20_F5_another_approach.txt",densities)
+    #numpy.savetxt("densities_Grad-20_F5_another_approach.txt",densities)
+    #numpy.savetxt("densities_one_Grad-20_F5_another_approach.txt",densities_one)
+    numpy.savetxt("phases_Grad-20_F1_another_approach.txt",phases)
     
     #pylab.figure(99)
     #legs=[x[11:14] for x in file_list]
@@ -296,26 +304,53 @@ def compare():
 def compare_with_initial():
     init_pressures=numpy.loadtxt("initial_pressures.txt")
     init_pressures_before_collision=numpy.loadtxt("initial_pressures_before_collision.txt")
-    pressures=numpy.loadtxt("pressures_Grad-20_another_approach.txt")
+    pressures_F1=numpy.loadtxt("pressures_Grad-20_another_approach.txt")
     pressures_F5=numpy.loadtxt("pressures_Grad-20_F5_another_approach.txt")
+    densities_F1=numpy.loadtxt("densities_Grad-20_F1_another_approach.txt")
     densities_F5=numpy.loadtxt("densities_Grad-20_F5_another_approach.txt")
+    densities_one_F1=numpy.loadtxt("densities_one_Grad-20_F1_another_approach.txt")
+    densities_one_F5=numpy.loadtxt("densities_one_Grad-20_F5_another_approach.txt")
+    phases_F1=numpy.loadtxt("phases_Grad-20_F1_another_approach.txt")
+    phases_F5=numpy.loadtxt("phases_Grad-20_F5_another_approach.txt")
+    
+    
     pylab.figure(1)
     radii=numpy.array([10,10,20,20,30,30,40,40,50,50])
     radii2=numpy.array([10,20,30,40,50])
     
-    pylab.plot(radii,pressures,'go',markersize=8)
-    pylab.plot(radii,pressures_F5,'k^',markersize=8)
-    pylab.plot(radii,init_pressures[:,0]-init_pressures[:,1],'bs',markersize=8,markerfacecolor=None)
-    pylab.plot(radii2,init_pressures_before_collision[:,0]-init_pressures_before_collision[:,1],'kv',markersize=8)
+    pylab.plot(radii2,pressures_F1[::2],'ko',markersize=8)
+    pylab.plot(radii2,pressures_F5[::2],'k^',markersize=8)
+    #pylab.plot(radii,init_pressures[:,0]-init_pressures[:,1],'bs',markersize=8,markerfacecolor=None)
+    #pylab.plot(radii2,init_pressures_before_collision[:,0]-init_pressures_before_collision[:,1],'kv',markersize=8)
     #pylab.plot(radii,pressures_F5+1.0/3.0-1.0/3.0*densities_F5,'kv',markersize=12)
     sigma=numpy.sqrt(aconst*kconst*8.0/9.0)
-    
+    radii_theor=numpy.linspace(5,50,50)
     # Theoretical pressure
-    pylab.plot(radii,sigma*1.0/radii,'r+-')
+    pylab.plot(radii_theor,sigma*1.0/radii_theor,'k-')
+    #pylab.plot(radii_theor,sigma*1.0/radii_theor+numpy.mean(densities_one_F5-densities_one_F1)/3.0,'k-.')
     # Biased pressure difference
-    pylab.plot(radii,init_pressures[:,0]-1.0/3.0-0.25*aconst,'kd')
-    pylab.legend(["Pressures_F1","Pressures_F5","Init_pressures","Init_pressures_bef_collision_F5"])
+    #pylab.plot(radii,init_pressures[:,0]-1.0/3.0-0.25*aconst,'kd')
+    pylab.legend(["Pressures_F1","Pressures_F5","Theoretical"]) #,"Corrected"])
+   
+    pylab.xlabel("Radius "+r'''$R$''',fontsize=20)
+    pylab.ylabel(r'''$\Delta P$''', fontsize=20)
+    pylab.title("Laplace Law", fontsize=30)
     pylab.savefig("comparison_another_approach.eps",dpi=300)
+    #pylab.figure(2)
+    #pylab.plot(radii,densities_F1,'ko-')
+    #pylab.plot(radii,densities_F5,'ks-')
+    pylab.figure(3)
+    pylab.plot(radii2,densities_one_F1[::2]-1,'ko-')
+    pylab.plot(radii2,densities_one_F5[::2]-1,'ks-')
+    pylab.xlabel("Radius "+r'''$R$''',fontsize=20)
+    pylab.ylabel(r'''$\Delta P_{\mathrm{hydro}}$''', fontsize=20)
+    pylab.title("Laplace Law", fontsize=30)
+    pylab.legend(["Pressures_F1","Pressures_F5"])
+    pylab.savefig("comparison_excess_hydro.eps",dpi=300)
+    
+    #pylab.figure(4)
+    #pylab.plot(radii,phases_F1,'ko-')
+    #pylab.plot(radii,phases_F5,'ks-')
 
 def make_nice_graphs():
     file_list=["vtk0035000_R10_Grad-20_F1.vtk","vtk0034000_R20_Grad-20_F1.vtk",
@@ -370,8 +405,8 @@ if __name__=="__main__":
     #file_name="vtk0018000.vtk"
     #read_vtk(file_name)
     #compare()
-    make_nice_graphs()
-    #compare_with_initial()
+    #make_nice_graphs()
+    compare_with_initial()
     #compare_pressures()
     #initial_pressures()
     #initial_pressures_read_files()

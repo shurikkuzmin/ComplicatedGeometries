@@ -383,6 +383,7 @@ def circle_analysis():
     pylab.legend(["Analytical","Simulations"])
     pylab.figure(99)
     pylab.savefig("different_boxes_circle.eps",format="EPS",dpi=300.0)
+    
 
 def circle_figures():
     anals=numpy.loadtxt("theoretical.dat")
