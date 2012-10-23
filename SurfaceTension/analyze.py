@@ -170,6 +170,55 @@ def compare():
     pylab.plot([10,20,30,40,50],5*[numpy.mean(pressures)],"r-",linewidth=3)
     pylab.ylim(ymin=0)
 
+def compare_F5():
+    #ratio04=["vtk021000_R10_F5_R04.vtk","vtk022000_R10_F5_R04.vtk",
+    #         "vtk020000_R20_F5_R04.vtk","vtk021000_R20_F5_R04.vtk",
+    #         "vtk020000_R30_F5_R04.vtk","vtk021000_R30_F5_R04.vtk",
+    #         "vtk021000_R40_F5_R04.vtk","vtk022000_R40_F5_R04.vtk",
+    #         "vtk021000_R50_F5_R04.vtk","vtk022000_R50_F5_R04.vtk"]
+    #ratio07=["vtk020000_R10_F5_R07.vtk","vtk021000_R10_F5_R07.vtk",
+    #         "vtk020000_R20_F5_R07.vtk","vtk021000_R20_F5_R07.vtk",
+    #         "vtk020000_R30_F5_R07.vtk","vtk021000_R30_F5_R07.vtk",
+    #         "vtk020000_R40_F5_R07.vtk","vtk021000_R40_F5_R07.vtk",
+    #         "vtk020000_R50_F5_R07.vtk","vtk021000_R50_F5_R07.vtk"]
+    ratio13=["vtk020000_R10_F5_R13.vtk","vtk021000_R10_F5_R13.vtk",
+             "vtk019000_R20_F5_R13.vtk","vtk020000_R20_F5_R13.vtk",
+             "vtk019000_R30_F5_R13.vtk","vtk020000_R30_F5_R13.vtk",
+             "vtk019000_R40_F5_R13.vtk","vtk020000_R40_F5_R13.vtk",
+             "vtk019000_R50_F5_R13.vtk","vtk020000_R50_F5_R13.vtk"]
+             
+ 
+    file_list=ratio13
+    ending="ratio13"
+    pressures=[]
+    densities=[]
+    densities_one=[]
+    for file_name in file_list:
+        pressure,density,density_one=get_droplet("Force5/"+file_name,0.4)
+        pressures.append(pressure)
+        densities.append(density)
+        densities_one.append(density_one)
+        
+    numpy.savetxt("pressures_Grad-20_F5_"+ending+".txt",pressures)
+    numpy.savetxt("densities_Grad-20_F5_"+ending+".txt",densities)
+    numpy.savetxt("densities_one_Grad-20_F5_"+ending+".txt",densities_one)
+    
+    pylab.figure(99)
+    legs=[x[11:14] for x in file_list]
+    pylab.savefig("shape_for_grad-20_F5_"+ending+".eps",format="EPS")
+    #pylab.legend(legs)
+    pylab.figure(100)
+    #pylab.legend(legs)
+    # pylab.savefig("velocities_for_grad0.eps",format="EPS")
+    pylab.figure(102)
+    print pressures
+    pylab.plot([10,10,20,20,30,30,40,40,50,50],pressures,'bs',markersize=8)
+    print numpy.mean(pressures)
+    pylab.savefig("pressure_for_grad-20_"+ending+".eps",format="EPS")
+    pylab.plot([10,20,30,40,50],5*[numpy.mean(pressures)],"r-",linewidth=3)
+    pylab.ylim(ymin=0)
+
+
 def compare_pressures():
     pressures_F1_ratio_04=numpy.loadtxt("pressures_Grad-20_F1_ratio04.txt")
     pressures_F1_ratio_07=numpy.loadtxt("pressures_Grad-20_F1_ratio07.txt")
@@ -200,10 +249,77 @@ def compare_pressures():
     pylab.ylabel(r'''$\Delta P$''',fontsize=20)
     pylab.title("Surface tension ratio",fontsize=30)
     pylab.savefig("pressures_vs_surface_tension_F1.eps")
+
+def compare_pressures_F5():
+    pressures_F5_ratio_04=numpy.loadtxt("pressures_Grad-20_F5_ratio04.txt")
+    pressures_F5_ratio_07=numpy.loadtxt("pressures_Grad-20_F5_ratio07.txt")
+    pressures_F5_ratio_13=numpy.loadtxt("pressures_Grad-20_F5_ratio13.txt")
+    
+    radii=numpy.array([10,10,20,20,30,30,40,40,50,50])
+    radii2=numpy.array([10,20,30,40,50])
+    pylab.plot(radii2,pressures_F5_ratio_04[::2],'ko')
+    pylab.plot(radii2,pressures_F5_ratio_07[::2],'ks')
+    pylab.plot(radii2,pressures_F5_ratio_13[1::2],'k^')
+    sigma_04=numpy.sqrt(8.0/9.0*0.04*0.04)*0.4
+    sigma_07=numpy.sqrt(8.0/9.0*0.04*0.04)*0.7
+    sigma_13=numpy.sqrt(8.0/9.0*0.04*0.04)*1.3
+    radii_theor=numpy.linspace(5,50,50)
+    pylab.plot(radii_theor,sigma_04/radii_theor,'k-')
+    pylab.plot(radii_theor,sigma_07/radii_theor,'k--')
+    pylab.plot(radii_theor,sigma_13/radii_theor,'k-.')
+        
+    pylab.legend(["Ratio=0.4","Ratio=0.7","Ratio=1.3",\
+                  "Theor=0.4","Theor=0.7","Theor=1.3"])
+    pylab.xlim(xmin=8)
+    pylab.ylim(ymin=0.0)
+    pylab.xlabel("Radius R",fontsize=20)
+    pylab.ylabel(r'''$\Delta P$''',fontsize=20)
+    pylab.title("Surface tension ratio",fontsize=30)
+    pylab.savefig("pressures_vs_surface_tension_F5.eps")
+
+def compare_F1_and_F5():
+    pressures_F1_ratio_04=numpy.loadtxt("pressures_Grad-20_F1_ratio04.txt")
+    pressures_F1_ratio_07=numpy.loadtxt("pressures_Grad-20_F1_ratio07.txt")
+    pressures_F1_ratio_13=numpy.loadtxt("pressures_Grad-20_F1_ratio13.txt")
+    pressures_F5_ratio_04=numpy.loadtxt("pressures_Grad-20_F5_ratio04.txt")
+    pressures_F5_ratio_07=numpy.loadtxt("pressures_Grad-20_F5_ratio07.txt")
+    pressures_F5_ratio_13=numpy.loadtxt("pressures_Grad-20_F5_ratio13.txt")
+    
+    radii=numpy.array([10,10,20,20,30,30,40,40,50,50])
+    radii2=numpy.array([10,20,30,40,50])
+    pylab.plot(radii2,pressures_F1_ratio_04[1::2],'ko')
+    pylab.plot(radii2,pressures_F1_ratio_07[::2],'ks')
+    pylab.plot(radii2,pressures_F1_ratio_13[::2],'k^')
+    pylab.plot(radii2,pressures_F5_ratio_04[::2],'ko',markerfacecolor="None")
+    pylab.plot(radii2,pressures_F5_ratio_07[::2],'ks',markerfacecolor="None")
+    pylab.plot(radii2,pressures_F5_ratio_13[1::2],'k^',markerfacecolor="None")
+    sigma_04=numpy.sqrt(8.0/9.0*0.04*0.04)*0.4
+    sigma_07=numpy.sqrt(8.0/9.0*0.04*0.04)*0.7
+    sigma_13=numpy.sqrt(8.0/9.0*0.04*0.04)*1.3
+    radii_theor=numpy.linspace(5,50,50)
+    pylab.plot(radii_theor,sigma_04/radii_theor,'k-')
+    pylab.plot(radii_theor,sigma_07/radii_theor,'k--')
+    pylab.plot(radii_theor,sigma_13/radii_theor,'k-.')
+        
+    pylab.legend(["Ratio=0.4","Ratio=0.7","Ratio=1.3",\
+                  "Ratio_F5=0.4","Ratio_F5=0.7","Ratio_F5=1.3",\
+                  "Theor=0.4","Theor=0.7","Theor=1.3"])
+    pylab.xlim(xmin=8)
+    pylab.ylim(ymin=0.0)
+    pylab.xlabel("Radius R",fontsize=20)
+    pylab.ylabel(r'''$\Delta P$''',fontsize=20)
+    pylab.title("Surface tension ratio",fontsize=30)
+    pylab.savefig("p_vs_s_F1_F5.eps")
+
+
+
 if __name__=="__main__":
     #file_name="vtk0018000.vtk"
     #read_vtk(file_name)
     #compare()
-    compare_pressures()
+    #compare_F5()
+    #compare_pressures()
+    #compare_pressures_F5()
+    compare_F1_and_F5()
     pylab.show()
 
