@@ -347,6 +347,18 @@ def compare_with_initial():
     pylab.title("Laplace Law", fontsize=30)
     pylab.legend(["Pressures_F1","Pressures_F5"])
     pylab.savefig("comparison_excess_hydro.eps",dpi=300)
+    pylab.figure(4)
+    pylab.plot(radii2,(densities_one_F5[::2]-1)/3.0,'ks-')
+    pylab.plot(radii2,pressures_F5[::2],'k^-') 
+    pylab.figure(5)
+    pylab.plot(radii2,pressures_F5[::2]-(densities_one_F5[::2]-1)/3.0,'ks-')
+    pylab.figure(6)
+    pylab.plot(radii2,pressures_F1[::2]-(densities_one_F1[::2]-1)/3.0,'ks-')
+    pylab.figure(7)
+    pylab.plot(radii2,pressures_F1[::2],'ks-')
+    pylab.plot(radii2,(densities_one_F1[::2]-1)/3.0,'ko-')
+    
+    
     
     #pylab.figure(4)
     #pylab.plot(radii,phases_F1,'ko-')
